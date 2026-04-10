@@ -26,16 +26,16 @@ contract Vote {
         admin = msg.sender;
     }
 
-    modifier onlyAdmin() {
+    modifier onlyOwner() {
         require(msg.sender == admin, "Not admin");
         _;
     }
     
-    function addCandidate(string memory _name) public onlyAdmin {
+    function addCandidate(string memory _name) public onlyOwner {
         candidates.push(Candidate(_name, 0));
     }
 
-    function addVoter(address _voter) public onlyAdmin {
+    function addVoter(address _voter) public onlyOwner {
         isVoter[_voter] = true;
         emit VoterAdded(_voter);
     }
@@ -61,12 +61,12 @@ contract Vote {
         return candidates.length;
     }
 
-    function openVoting() public onlyAdmin {
+    function openVoting() public onlyOwner {
         votingOpen = true;
         emit VotingOpened();
     }
 
-    function closeVoting() public onlyAdmin {
+    function closeVoting() public onlyOwner {
         votingOpen = false;
         emit VotingClosed();
     }
