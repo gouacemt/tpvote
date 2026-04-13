@@ -42,3 +42,27 @@ describe("Vote", function () {
 
   });
 });
+
+describe("Gestion des électeurs", function () {
+
+  it("L'admin peut ajouter un électeur", async function () {
+    const { vote, voter1 } = await deployVoteFixture();
+
+    // Vérifier l'émission de l'event
+    await expect(vote.addVoter(voter1.address))
+      .to.emit(vote, "VoterAdded")
+      .withArgs(voter1.address);
+
+    // Vérifier que l'adresse est bien enregistrée
+    expect(await vote.isVoter(voter1.address)).to.equal(true);
+  });
+
+  it("Un non-admin ne peut PAS ajouter un électeur", async function () {
+  const { vote, voter1, voter2 } = await deployVoteFixture();
+
+  // voter1 essaie d'ajouter voter2 → doit échouer
+  await expect(
+    vote.connect(voter1).addVoter(voter2.address)
+  ).to.be.revertedWith("Not admin");
+});
+});
