@@ -36,6 +36,7 @@ contract Vote {
     }
 
     function addVoter(address _voter) public onlyOwner {
+        require(!isVoter[_voter], "Voter already registered");
         isVoter[_voter] = true;
         emit VoterAdded(_voter);
     }

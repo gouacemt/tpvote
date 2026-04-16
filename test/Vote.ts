@@ -64,5 +64,17 @@ describe("Gestion des électeurs", function () {
   await expect(
     vote.connect(voter1).addVoter(voter2.address)
   ).to.be.revertedWith("Not admin");
-});
+  });
+
+  it("Impossible d'ajouter deux fois le même électeur", async function () {
+  const { vote, voter1 } = await deployVoteFixture();
+
+  // Premier ajout → ok
+  await vote.addVoter(voter1.address);
+
+  // Deuxième ajout → doit échouer
+  await expect(
+    vote.addVoter(voter1.address)
+  ).to.be.revertedWith("Voter already registered");
+  });
 });
