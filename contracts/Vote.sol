@@ -50,7 +50,7 @@ contract Vote {
         _;
     }
 
-    function vote(uint _candidateIndex) public onlyVoter {    
+    function vote(uint _candidateIndex) public onlyVoter votingIsOpen{    
         require(!hasVoted[msg.sender], "You already voted");
 
         hasVoted[msg.sender] = true;
