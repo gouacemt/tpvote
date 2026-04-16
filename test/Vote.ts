@@ -145,4 +145,48 @@ describe("Tests de vote", function () {
       vote.connect(voter1).vote(0)
     ).to.be.revertedWith("Voting closed");
   });
+
+  it("Impossible de voter pour un candidat inexistant", async function () {
+    const { ethers } = await network.connect();
+    const { vote, voter1 } = await deployVoteFixture();
+
+    await vote.openVoting();
+    await vote.addVoter(voter1.address);
+
+    await expect(
+      vote.connect(voter1).vote(2)
+    ).to.revert(ethers);
+  });
+
+  describe("Résultats", function () {
+
+  it("getWinner retourne le bon candidat", async function () {
+    const { vote, voter1, voter2 } = await deployVoteFixture();
+
+    await vote.openVoting();
+    await vote.addVoter(voter1.address);
+    await vote.addVoter(voter2.address);
+
+
+    await vote.connect(voter1).vote(1); 
+    await vote.connect(voter2).vote(1); 
+
+    const winnerIndex = await vote.getWinner();
+    expect(winnerIndex).to.equal(1n);
+  });
+
+  it("En cas d'égalité, getWinner retourne le premier candidat", async function () {
+    const { vote, voter1, voter2 } = await deployVoteFixture();
+
+    await vote.openVoting();
+    await vote.addVoter(voter1.address);
+    await vote.addVoter(voter2.address);
+
+    await vote.connect(voter1).vote(0);
+    await vote.connect(voter2).vote(1); 
+    const winnerIndex = await vote.getWinner();
+    expect(winnerIndex).to.equal(0n);
+  });
+
+});
 });
