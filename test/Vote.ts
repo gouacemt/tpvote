@@ -1,7 +1,6 @@
 import { expect } from "chai";
 import { network } from "hardhat";
 
-// Fixture de déploiement
 async function deployVoteFixture() {
   const { ethers } = await network.connect();
   const [admin, voter1, voter2] = await ethers.getSigners();
@@ -13,6 +12,7 @@ async function deployVoteFixture() {
   await vote.addCandidate("Alice");
   await vote.addCandidate("Bob");
 
+  
   return { vote, admin, voter1, voter2 };
 }
 
