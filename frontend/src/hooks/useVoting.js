@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ethers } from "ethers";
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from "../constants/contract";
 
@@ -14,12 +14,13 @@ export function useVoting() {
   const [candidates, setCandidates] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Connexion MetaMask
   async function connectWallet() {
     if (!window.ethereum) {
       alert("Installe MetaMask !");
       return;
     }
+
+    await window.ethereum.request({ method: "eth_requestAccounts" });
 
     const _provider = new ethers.BrowserProvider(window.ethereum);
     const _signer = await _provider.getSigner();
@@ -35,23 +36,35 @@ export function useVoting() {
   }
 
   async function loadData(_contract, _account) {
-    const admin = await _contract.admin();
-    const _votingOpen = await _contract.votingOpen();
-    const _isVoter = await _contract.isVoter(_account);
-    const _hasVoted = await _contract.hasVoted(_account);
-    const count = await _contract.getCandidatesCount();
+    try {
+      const readProvider = new ethers.JsonRpcProvider(
+        "https://eth-sepolia.g.alchemy.com/v2/pcVrThFFoQQV6foQs4Rik"
+      );
+      const readContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, readProvider);
 
-    setIsAdmin(admin.toLowerCase() === _account.toLowerCase());
-    setVotingOpen(_votingOpen);
-    setIsVoter(_isVoter);
-    setHasVoted(_hasVoted);
+      const admin = await readContract.admin();
+      console.log("Admin:", admin);
+      console.log("Compte:", _account);
 
-    const _candidates = [];
-    for (let i = 0; i < count; i++) {
-      const c = await _contract.candidates(i);
-      _candidates.push({ name: c.name, voteCount: c.voteCount.toString() });
+      const _votingOpen = await readContract.votingOpen();
+      const _isVoter = await readContract.isVoter(_account);
+      const _hasVoted = await readContract.hasVoted(_account);
+      const count = await readContract.getCandidatesCount();
+
+      setIsAdmin(admin.toLowerCase() === _account.toLowerCase());
+      setVotingOpen(_votingOpen);
+      setIsVoter(_isVoter);
+      setHasVoted(_hasVoted);
+
+      const _candidates = [];
+      for (let i = 0; i < count; i++) {
+        const c = await readContract.candidates(i);
+        _candidates.push({ name: c.name, voteCount: c.voteCount.toString() });
+      }
+      setCandidates(_candidates);
+    } catch (error) {
+      console.error("Erreur loadData:", error);
     }
-    setCandidates(_candidates);
   }
 
   async function openVoting() {
