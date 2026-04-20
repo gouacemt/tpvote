@@ -3,9 +3,9 @@ function VoterPanel({ candidates, vote, hasVoted, votingOpen, loading }) {
     <div>
       <h2>Panel Électeur</h2>
 
-      {!votingOpen && <p>⏳ Le vote n'est pas encore ouvert.</p>}
+      {!votingOpen && <p>Le vote n'est pas encore ouvert.</p>}
 
-      {hasVoted && <p>✅ Vous avez déjà voté !</p>}
+      {hasVoted && <p>Vous avez déjà voté !</p>}
 
       {votingOpen && !hasVoted && (
         <div>

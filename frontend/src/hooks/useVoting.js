@@ -31,11 +31,9 @@ export function useVoting() {
     setAccount(_account);
     setContract(_contract);
 
-    // Charger les données
     await loadData(_contract, _account);
   }
 
-  // Charger les données du contrat
   async function loadData(_contract, _account) {
     const admin = await _contract.admin();
     const _votingOpen = await _contract.votingOpen();
@@ -56,7 +54,6 @@ export function useVoting() {
     setCandidates(_candidates);
   }
 
-  // Actions admin
   async function openVoting() {
     setLoading(true);
     await contract.openVoting();
@@ -70,7 +67,6 @@ export function useVoting() {
     setLoading(false);
   }
 
-  // Action voter
   async function vote(index) {
     setLoading(true);
     await contract.vote(index);

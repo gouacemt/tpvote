@@ -22,7 +22,7 @@ function App() {
 
   return (
     <div>
-      <h1>🗳️ Application de Vote</h1>
+      <h1>Application de Vote</h1>
 
       <ConnectWallet account={account} connectWallet={connectWallet} />
 
