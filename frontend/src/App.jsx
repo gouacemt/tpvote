@@ -28,7 +28,7 @@ function App() {
 
       {account && (
         <>
-          <StatusBanner votingOpen={votingOpen} />
+          <StatusBanner votingOpen={votingOpen} isAdmin={isAdmin} account={account} />
 
           {isAdmin && (
             <AdminPanel

@@ -2,6 +2,8 @@ import { useState } from "react";
 import { ethers } from "ethers";
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from "../constants/contract";
 
+const ALCHEMY_URL = "https://eth-sepolia.g.alchemy.com/v2/pcVrThFFoQQV6foQs4Rik";
+
 export function useVoting() {
   const [provider, setProvider] = useState(null);
   const [signer, setSigner] = useState(null);
@@ -15,37 +17,37 @@ export function useVoting() {
   const [loading, setLoading] = useState(false);
 
   async function connectWallet() {
-    if (!window.ethereum) {
-      alert("Installe MetaMask !");
-      return;
-    }
-
-    await window.ethereum.request({ method: "eth_requestAccounts" });
-
-    const _provider = new ethers.BrowserProvider(window.ethereum);
-    const _signer = await _provider.getSigner();
-    const _account = await _signer.getAddress();
-    const _contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, _signer);
-
-    setProvider(_provider);
-    setSigner(_signer);
-    setAccount(_account);
-    setContract(_contract);
-
-    await loadData(_contract, _account);
+  if (!window.ethereum) {
+    alert("Installe MetaMask !");
+    return;
   }
+
+  await window.ethereum.request({
+    method: "wallet_switchEthereumChain",
+    params: [{ chainId: "0xaa36a7" }],
+  });
+
+  await window.ethereum.request({ method: "eth_requestAccounts" });
+
+  const _provider = new ethers.BrowserProvider(window.ethereum);
+  const _signer = await _provider.getSigner();
+  const _account = await _signer.getAddress();
+  const _contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, _signer);
+
+  setProvider(_provider);
+  setSigner(_signer);
+  setAccount(_account);
+  setContract(_contract);
+
+  await loadData(_contract, _account);
+}
 
   async function loadData(_contract, _account) {
     try {
-      const readProvider = new ethers.JsonRpcProvider(
-        "https://eth-sepolia.g.alchemy.com/v2/pcVrThFFoQQV6foQs4Rik"
-      );
+      const readProvider = new ethers.JsonRpcProvider(ALCHEMY_URL);
       const readContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, readProvider);
 
       const admin = await readContract.admin();
-      console.log("Admin:", admin);
-      console.log("Compte:", _account);
-
       const _votingOpen = await readContract.votingOpen();
       const _isVoter = await readContract.isVoter(_account);
       const _hasVoted = await readContract.hasVoted(_account);
@@ -68,24 +70,47 @@ export function useVoting() {
   }
 
   async function openVoting() {
-    setLoading(true);
-    await contract.openVoting();
-    setVotingOpen(true);
-    setLoading(false);
+    try {
+      setLoading(true);
+      const tx = await contract.openVoting();
+      await tx.wait();
+      setVotingOpen(true);
+      await loadData(contract, account);
+    } catch (error) {
+      console.error("Erreur openVoting:", error);
+      alert("Erreur : " + (error.reason || error.message));
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function addVoter(address) {
-    setLoading(true);
-    await contract.addVoter(address);
-    setLoading(false);
+    try {
+      setLoading(true);
+      const tx = await contract.addVoter(address);
+      await tx.wait();
+      await loadData(contract, account);
+    } catch (error) {
+      console.error("Erreur addVoter:", error);
+      alert("Erreur : " + (error.reason || error.message));
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function vote(index) {
-    setLoading(true);
-    await contract.vote(index);
-    setHasVoted(true);
-    await loadData(contract, account);
-    setLoading(false);
+    try {
+      setLoading(true);
+      const tx = await contract.vote(index);
+      await tx.wait();
+      setHasVoted(true);
+      await loadData(contract, account);
+    } catch (error) {
+      console.error("Erreur vote:", error);
+      alert("Erreur : " + (error.reason || error.message));
+    } finally {
+      setLoading(false);
+    }
   }
 
   return {
